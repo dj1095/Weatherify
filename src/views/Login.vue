@@ -3,9 +3,12 @@
     <div class="login-container">
         <div class="login-form">
             <h1>Login</h1>
-            <input type="text" name="username" id="username" placeholder="Username" v-model="username">
-            <input type="password" name="password" id="password" placeholder="password" v-model="password">
-            <button type="button" class="btn btn-primary" @click="isValidUser(username,password)">Login</button>
+            <form @submit.prevent="isValidUser(username,password)">
+                <input required type="text" name="username" id="username" placeholder="Username" v-model="username">
+                <input required type="password" name="password" id="password" placeholder="password" v-model="password">
+                <div v-if="!isValid" :class="{invalid:!isValid}"> <span>Username or Password is Invalid .</span></div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
         </div>
     </div>
 </div>
@@ -14,12 +17,12 @@
 <script>
 const users = {
     'hero': {
-        "id":'1',
+        "id": '1',
         "name": "Jajala",
         "password": "1234"
     },
     'villain': {
-        "id":'2',
+        "id": '2',
         "name": "Durga",
         "password": "1234"
     }
@@ -29,24 +32,27 @@ export default {
     data() {
         return {
             username: '',
-            password: ''
+            password: '',
+            isValid: true
         }
     },
     methods: {
         isValidUser(username, password) {
-            let isValid = false;
+            this.isValid = false;
             if (username && password) {
                 username = username.toLowerCase().trim();
                 if (users[username]) {
-                    isValid = (users[username].password === password) ? true : false;
+                    this.isValid = (users[username].password === password) ? true : false;
                 } else {
-                    isValid = false;
+                    this.isValid = false;
                 }
             }
-            if (isValid) {
+            if (this.isValid) {
                 sessionStorage.setItem("isAuthenticated", username);
-                 this.$root.$emit('userLoggedin');
-                this.$router.push({name:'Home'})
+                this.$root.$emit('userLoggedin');
+                this.$router.push({
+                    name: 'Home'
+                })
             }
         },
 
@@ -69,6 +75,11 @@ input {
     display: block;
     margin: 1em 0;
     width: 25vw;
+}
+
+.invalid {
+    color: red;
+    display: block;
 }
 
 .login-form {

@@ -3,9 +3,10 @@
     <div class="serch-form">
         <form @submit.prevent="getWeather">
             <div class="flex-item">
-                <TypeAhead :render="render" src="/static/cities.json?keyword=:keyword" :getResponse="getResponse" classes="t-input" placeholder="Enter City" v-model="city" required></TypeAhead>
+                <TypeAhead  @input="validateForm(city)" :render="render" src="/static/cities.json?keyword=:keyword" :getResponse="getResponse" classes="t-input" placeholder="Enter City" v-model="city" :class="{invalid:errors.length}"></TypeAhead>
                 <button type="submit" class="btn btn-primary">Get Weather</button>
             </div>
+            <span v-if="errors.length" class="input-err-msg">Please Enter Valid City name</span>
             <div class="flex-item">
                 <button type="button" class="btn btn-light mb-2" @click="getCurrentLocWeather()">
                     <svg class="bi bi-geo-alt" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -32,12 +33,25 @@ export default {
             weatherResp: undefined,
             errorOccured: false,
             isInvalid: false,
-            isAuthenticated: false
+            isAuthenticated: false,
+            errors: []
         }
     },
     methods: {
         getResponse: function (response) {
             return response.data.data;
+        },
+        validateForm(city){
+            if(!city){
+                this.errors.push('Please enter a city name ');
+                return false;
+            }
+            if(!city.match('^[a-zA-Z0-9]+$')){
+                this.errors.push('Please enter a valid city name');
+                return false
+            }
+            this.errors=[]
+            return true;
         },
         render: function (items, vue) {
             let newItem = []
@@ -49,12 +63,14 @@ export default {
             return newItem
         },
         getWeather() {
-            this.$router.push({
-                name: 'WeatherReport',
-                params: {
-                    city: this.city
-                }
-            })
+            if (this.validateForm( this.city)) {
+                this.$router.push({
+                    name: 'WeatherReport',
+                    params: {
+                        city: this.city
+                    }
+                })
+            }
         },
         getCurrentLocWeather() {
             if (navigator.geolocation) {
@@ -66,9 +82,12 @@ export default {
                             city: position.coords.latitude + ',' + position.coords.longitude
                         }
                     })
-                }, error => console.log(error));
+                }, error => {
+                    console.log(error)
+                    alert('unable to access your current location information');
+                });
             } else {
-                alert('unable to access your location information');
+                alert('unable to access your current location information');
             }
         }
     }
@@ -92,8 +111,13 @@ export default {
     width: 50%;
 }
 
+.input-err-msg {
+    color: red;
+}
+
 .invalid {
     border: 1px solid red;
+    border-radius: .2rem;
 }
 
 .flex-item {

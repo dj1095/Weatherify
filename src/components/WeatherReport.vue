@@ -148,7 +148,7 @@ export default {
                     );
                 } else {
                     this.isLoading = false;
-                    this.weatherData = JSON.parse(localStorage.getItem('currentLocWeather'));
+                    this.weatherData = JSON.parse(localStorage.getItem(lattitude + '' + longitude));
                 }
             } else {
                 this.isLoading = false;
